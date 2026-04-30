@@ -82,9 +82,19 @@ void cr_run(void) {
     }
 
     // 3. 执行低功耗休眠
-    if (can_sleep && min_sleep > 0 && min_sleep != 0xFFFFFFFF) {
-        bool is_locked = (s_sleep_lock_count > 0);
-        cr_port_enter_sleep(min_sleep, is_locked); 
+    cr_port_critical_enter();
+    bool final_can_sleep = can_sleep;
+    // 快速重新检查是否有新唤醒的任务
+    for (int i = 0; i < s_task_count; i++) {
+        if (s_tasks[i]->status == CR_STATE_READY) {
+            final_can_sleep = false;
+            break;
+        }
     }
+    if (final_can_sleep && min_sleep > 0 && min_sleep != 0xFFFFFFFF) {
+        bool is_locked = (s_sleep_lock_count > 0);
+        cr_port_enter_sleep(min_sleep, is_locked);
+    }
+    cr_port_critical_exit();
 }
 
