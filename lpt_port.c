@@ -1,4 +1,4 @@
-#include "nanocr.h"
+#include "lpt.h"
 
 // 假设这是你包含的硬件库，例如：#include "stm32g0xx_hal.h"
 
@@ -13,12 +13,12 @@ uint32_t sys_tick_get(void) {
 }
 
 // 进入临界区 (关闭全局中断)
-void cr_port_critical_enter(void) {
+void lpt_port_critical_enter(void) {
     __disable_irq(); // CMSIS 标准指令
 }
 
 // 退出临界区 (开启全局中断)
-void cr_port_critical_exit(void) {
+void lpt_port_critical_exit(void) {
     __enable_irq();
 }
 
@@ -26,7 +26,7 @@ void cr_port_critical_exit(void) {
  * 核心低功耗休眠与补偿
  * 说明：此函数由调度器自动调用，开发者需根据具体的 MCU 填入对应的睡眠代码
  *===========================================================================*/
-void cr_port_enter_sleep(uint32_t sleep_ms, bool is_locked) {
+void lpt_port_enter_sleep(uint32_t sleep_ms, bool is_locked) {
     
     // 【情况 A】有外设上了休眠锁，或者睡眠时间极短
     if (is_locked || sleep_ms < 5) {
@@ -56,9 +56,9 @@ void cr_port_enter_sleep(uint32_t sleep_ms, bool is_locked) {
     // uint32_t actual_sleep_ms = LPTIM_GetElapsed(); 
 
     // 5. 将这缺失的时间补偿给全局系统节拍
-    // cr_port_critical_enter();
+    // lpt_port_critical_enter();
     // g_sys_tick += actual_sleep_ms;
-    // cr_port_critical_exit();
+    // lpt_port_critical_exit();
 
     // 6. 恢复常规系统滴答
     // SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
