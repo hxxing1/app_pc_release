@@ -30,6 +30,14 @@ typedef struct lpt_t {
     struct lpt_t *next;    // 链表指针，用于单向队列组织
 } lpt_t;
 
+// 子协程控制块 - 极度精简版 (不需要函数指针和队列指针)
+typedef struct {
+    uint16_t lc;           // 行号记录器
+    uint8_t  status;       // 协程当前状态
+    uint32_t start_tick;   // 计时的起始系统节拍
+    uint32_t delay_tick;   // 目标的延时/超时节拍数
+} lpt_child_t;
+
 /*===========================================================================*
  * API 声明
  *===========================================================================*/
@@ -107,7 +115,7 @@ extern void lpt_port_enter_sleep(uint32_t sleep_ms, bool is_locked);
     } while(0)
 
 // 子协程调用：父协程挂起等待子协程完成
-// child 需用 static lpt_t child = {0} 初始化为零
+// child 需用 static lpt_child_t child = {0} 初始化为零
 #define LPT_CALL(pt, child, child_func) \
     do { \
         (pt)->lc = __LINE__; \
